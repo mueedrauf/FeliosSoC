@@ -1,15 +1,22 @@
 `timescale 1ns / 1ps
 ////////////////////////////////////////////////////////////////////////////////
-// Module : dmem_wb_slave
-// Description:
-//   64 KB byte-addressable data SRAM exposed as a Wishbone B4 slave.
-//   This replaces the old internal Data_Mem module. The CPU (MEM stage)
-//   is the Wishbone master; every load and store goes through the bus.
-//
-// Memory Size:
-//   65536 bytes  (64 KB)   =>  16384 x 32-bit words
-//   Byte addresses : 0x0000_0000 .. 0x0000_FFFF  (relative to slave base)
-//   SoC base address: 0x0002_0000  (mapped in SoC_top address decoder)
+// Company: 
+// Engineer: 
+// 
+// Create Date: 06/23/2026 04:02:47 PM
+// Design Name: 
+// Module Name: dmem_wb_slave
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+
 //
 // Wishbone B4 Compliance:
 //   - Single-cycle registered ACK (ACK returns one clock after STB+CYC).
@@ -30,23 +37,6 @@
 //   Cycle 1 :  Slave latches inputs, drives ACK=1 and DAT_O (for reads).
 //   Cycle 2 :  Master samples ACK; slave drops ACK.
 //
-//   Total latency seen by the pipeline = 1 wait-state (WBStall high for
-//   exactly 1 clock cycle per access).
-//
-// FIX (spurious extra ACK / robustness):
-//   Previously, ACK was re-asserted any cycle valid_access (CYC & STB) was
-//   still high, with no memory of "we already acked this strobe." If a
-//   master drops CYC/STB one cycle *after* sampling ACK (as is normal --
-//   the sample-then-react latency of a synchronous master), CYC/STB are
-//   still high during the cycle the slave re-evaluates valid_access, so
-//   the slave would re-assert ACK (and, for a write, re-apply the byte
-//   writes) for a spurious extra cycle. With the corrected MEM.sv FSM this
-//   extra pulse lands in a cycle where the master isn't watching ack_i, so
-//   it's currently harmless -- but it's still a Wishbone-compliance bug
-//   and a landmine for any future master. Fixed by tracking whether the
-//   current strobe has already been acknowledged, so ACK only ever pulses
-//   once per CYC/STB assertion no matter how long it stays high, and
-//   re-arms only after the master drops CYC/STB.
 ////////////////////////////////////////////////////////////////////////////////
 module dmem_wb_slave (
     //  Wishbone slave port 

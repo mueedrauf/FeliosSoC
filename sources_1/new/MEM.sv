@@ -1,30 +1,23 @@
 `timescale 1ns / 1ps
-////////////////////////////////////////////////////////////////////////////////
-// Module : MEM (Direct Pipeline-Driven Interconnect Redesign)
-//
-// FIX (deadlock / race):
-//   The previous version derived WBStall purely from the *registered*
-//   wb_state (WBStall = (wb_state == WB_ACTIVE)). Because wb_state only
-//   becomes WB_ACTIVE one clock edge AFTER a request is detected, there was
-//   a one-cycle window where a memory instruction sat in MEM with
-//   WBStall == 0. During that window every upstream pipeline register
-//   (IF/ID, ID/EX, EX/MEM) was allowed to advance, silently overwriting
-//   ALUResultM / RdM / MemWriteM / ResultSrcM with the *next* instruction
-//   before the FSM ever launched a bus cycle for the memory instruction.
-//   That corrupted the MEM/WB handoff (wrong Rd paired with wrong data)
-//   and, for back-to-back memory instructions, could drop a request
-//   entirely -- CYC/STB were never (re)asserted and WBStall/StallF/StallD
-//   stayed high forever (deadlock).
-//
-//   Fix: make WBStall a combinational function of "do we need to start a
-//   transaction" (state == IDLE) OR "are we still waiting for ack"
-//   (state == ACTIVE). This asserts the stall on the exact same cycle the
-//   request is detected, and de-asserts it on the exact same cycle ack_i
-//   arrives, so every pipeline register freezes/thaws in lock-step with
-//   the bus FSM. The MEM/WB register now also captures wb_dat_i directly
-//   on the ack cycle instead of going through an extra latch, so there's
-//   no extra hidden pipeline stage either.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 06/23/2026 04:02:47 PM
+// Design Name: 
+// Module Name: MEM
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 module MEM (
     input  logic        clk,
     input  logic        rst,
@@ -60,22 +53,16 @@ module MEM (
     output logic [4:0]  RDW
 );
 
-    // =========================================================================
-    // 1. Core Pipeline Memory Request Detection
-    // =========================================================================
-    // Wire expression to determine if current instruction in MEM needs the bus.
-    // ResultSrcM == 2'b01 indicates a Load instruction (lw).
-    wire pipe_mem_req = MemWriteM || (ResultSrcM == 2'b01);
+    // 1. Memory Request Identification
+    wire pipe_mem_req = (MemWriteM || (ResultSrcM == 2'b01)) && !rst;
 
-    // =========================================================================
-    // 2. Wishbone Master FSM (Direct EX/MEM Pipeline Signal Drive)
-    // =========================================================================
+    // 2. Wishbone FSM States
     typedef enum logic {
         WB_IDLE   = 1'b0,
         WB_ACTIVE = 1'b1
     } wb_state_t;
 
-    wb_state_t   wb_state;
+    wb_state_t wb_state;
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -88,21 +75,14 @@ module MEM (
             wb_dat_o <= 32'h0;
         end else begin
             case (wb_state)
-
                 WB_IDLE: begin
-                    // If a memory request is active in the EX/MEM registers,
-                    // launch the transaction immediately. WBStall (below) is
-                    // already high on this same cycle, so the instruction
-                    // that caused pipe_mem_req is guaranteed to still be
-                    // sitting in EX/MEM on the next edge -- nothing can slip
-                    // in ahead of it.
                     if (pipe_mem_req) begin
                         wb_cyc_o <= 1'b1;
                         wb_stb_o <= 1'b1;
                         wb_we_o  <= MemWriteM;
                         wb_sel_o <= 4'b1111;
-                        wb_adr_o <= ALUResultM; // Safely driven directly by pipeline
-                        wb_dat_o <= WriteDataM; // Safely driven directly by pipeline
+                        wb_adr_o <= ALUResultM;
+                        wb_dat_o <= WriteDataM;
                         wb_state <= WB_ACTIVE;
                     end
                 end
@@ -111,36 +91,24 @@ module MEM (
                     if (wb_ack_i) begin
                         wb_cyc_o <= 1'b0;
                         wb_stb_o <= 1'b0;
-                        wb_state <= WB_IDLE;  // Handshake complete, return to IDLE
+                        wb_we_o  <= 1'b0;
+                        wb_state <= WB_IDLE;
                     end
                 end
-
             endcase
         end
     end
 
-    // =========================================================================
-    // 3. Pipeline Stall Generation  (COMBINATIONAL -- this is the fix)
-    // =========================================================================
-    // - In WB_IDLE: stall the instant a request is detected, on the SAME
-    //   cycle, so the requesting instruction cannot be overwritten before
-    //   the FSM claims it.
-    // - In WB_ACTIVE: stall until ack_i arrives, and drop on the SAME
-    //   cycle ack_i is high (Wishbone B4 guarantees wb_dat_i is valid
-    //   whenever wb_ack_i is high), so MEM/WB captures the correct data
-    //   with no extra latency and no dropped requests.
+    // 3. High Performance Combinational Stall Generation
     always_comb begin
-        if (rst)
-            WBStall = 1'b0;
-        else if (wb_state == WB_IDLE)
+        if (wb_state == WB_IDLE) begin
             WBStall = pipe_mem_req;
-        else // WB_ACTIVE
-            WBStall = ~wb_ack_i;
+        end else begin
+            WBStall = !wb_ack_i;
+        end
     end
 
-    // =========================================================================
-    // 4. MEM/WB Pipeline Output Register
-    // =========================================================================
+    // 4. Output Pipeline Registers
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             RegWriteW  <= 1'b0;
@@ -153,8 +121,7 @@ module MEM (
             RegWriteW  <= RegWriteM;
             ResultSrcW <= ResultSrcM;
             ALUResultW <= ALUResultM;
-            ReadDataW  <= wb_dat_i;   // valid on the ack cycle for loads;
-                                      // don't-care (unused) for non-loads
+            ReadDataW  <= wb_dat_i; 
             PCPlus4W   <= PCPlus4M;
             RDW        <= RdM;
         end

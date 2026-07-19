@@ -1,59 +1,62 @@
-// ====================================================================
-// RISC-V Instruction Memory Hex File (Byte-Addressable, Little Endian)
-// ====================================================================
-
-// Addr 0-3 | Instruction 2: add x6, x8, x9
-33 
-03 
-94 
-00
-
-// Addr 4-7 | Instruction 3: sub x7, x6, x20
-B3 
-03 
-43 
-41
-
-// Addr 8-11 | Instruction 0: lw x28, 4(x0)
-03 
-AE 
-41 
-00
-
-
-// Addr 12-15 | Instruction 1: sw x7, 5(x6)
-A3 
-A2 
-C1 
-01
-
-// Addr 16-19 | Instruction 8: beq x29, x29, label
-63 
-82 
-DE 
-01
-
-
-// Addr 0-3 | Instruction 2: add x6, x8, x9
-33 
-03 
-94 
-00
-
-// Addr 8-11 | Instruction 0: lw x28, 4(x0)
-03 
-AE 
-41 
-00
-
-// Addr 0-3 | Instruction 2: add x6, x8, x9
-33 
-03 
-94 
-00
-
-// Addr 0-3 | Instruction 2: add x6, x8, x9
-33 
-03 
-94 
-00
+33 85 20 00  // add  x10, x1, x2
+B3 85 32 40  // sub  x11, x5, x3
+33 76 73 00  // and  x12, x6, x7
+B3 66 82 00  // or   x13, x4, x8
+33 27 51 00  // slt  x14, x2, x5
+B3 07 B5 00  // add  x15, x10, x11
+13 08 40 06  // addi x16, x0, 100
+93 08 68 FF  // addi x17, x16, -10
+23 20 AA 00  // sw   x10, 0(x20)
+23 22 BA 00  // sw   x11, 4(x20)
+83 2A 0A 00  // lw   x21, 0(x20)
+03 2B 4A 00  // lw   x22, 4(x20)
+B3 8B 6A 41  // sub  x23, x21, x22
+E3 06 00 00  // beq  x0, x0, +12      (Changed from 63 04 00 00 -> PC + 12)
+33 0C 10 00  // add  x24, x0, x1
+13 0C 30 06  // addi x24, x0, 99
+EF 00 C0 00  // jal  x1, +12          (Changed from EF 00 80 00 -> PC + 12)
+93 0C A0 0A  // addi x25, x0, 170     (0xAA)
+93 0C B0 0B  // addi x25, x0, 187     (0xBB)
+83 22 8E 00  // lw   x5, 8(x28)
+93 F2 12 00  // andi x5, x5, 1
+E3 06 00 00  // beq  x5, x0, +12      (Changed from 63 82 02 00 -> PC + 12)
+6F F0 5F FF  // jal  x0, -12          (PC - 12)
+23 20 0E 01  // sw   x16, 0(x28)
+13 03 30 00  // addi x6, x0, 3
+23 26 6E 00  // sw   x6, 12(x28)
+63 00 00 00  // beq  x0, x0, 0        (Infinite Loop / Trap)
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+13 00 00 00  // nop
+83 22 0E 01  // lw   x5, 16(x28)      (Start of ISR region)
+23 28 5E 00  // sw   x5, 16(x28)
+03 2D 4E 00  // lw   x26, 4(x28)
+73 00 20 30  // mret
+63 00 00 00  // beq  x0, x0, 0        (End-of-ISR Safety Trap)

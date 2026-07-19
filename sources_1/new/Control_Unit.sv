@@ -1,9 +1,10 @@
 `timescale 1ns / 1ps
+
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
 // 
-// Create Date: 06/17/2026 03:31:04 PM
+// Create Date: 06/23/2026 03:00:14 PM
 // Design Name: 
 // Module Name: Control_Unit
 // Project Name: 
@@ -18,7 +19,6 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
 
 module Control_Unit(
     input  [6:0] Op,
@@ -91,20 +91,20 @@ always @(*) begin
             MemWrite  = 1'b0;
             ResultSrc = 2'b10;
             Branch    = 1'b0;
-            ALUOp     = 2'bxx;
-            jump = 1'b1;
+            ALUOp     = 2'b00; // MODIFIED: Changed from 2'bxx to 2'b00 for stable decoding
+            jump      = 1'b1;
         end
         
         // i type
         7'b0010011: begin
             RegWrite  = 1'b1;
             ImmSrc    = 2'b00;
-            ALUSrc    = 1'bx;
+            ALUSrc    = 1'b1;   
             MemWrite  = 1'b0;
             ResultSrc = 2'b00;
             Branch    = 1'b0;
             ALUOp     = 2'b10;
-            jump = 1'b0;
+            jump      = 1'b0;
         end
         
         // default case

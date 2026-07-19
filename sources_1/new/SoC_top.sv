@@ -1,37 +1,23 @@
 `timescale 1ns / 1ps
-////////////////////////////////////////////////////////////////////////////////
-// Module : SoC_top
-//
-// RV32I pipelined SoC with Wishbone B4 interconnect.
-//
-//  Address Map 
-//  0x0000_0000 .. 0x0000_3FFF   Instruction SRAM  (in-CPU, 16 KB, read-only)
-//  0x0002_0000 .. 0x0002_FFFF   Data SRAM         (dmem_wb_slave, 64 KB)
-//  0x1000_0000 .. 0x1000_0FFF   UART              (uart_wb_slave)
-//  0x1000_1000 .. 0x1000_1FFF   I2C               (i2c_wb_slave)
-//
-//  Interrupt 
-//  UART and I2C IRQ lines are OR-ed into a single non-vectored irq_i.
-//  The ISR reads each peripheral's IRQ_STAT register to identify the source.
-//
-//  Wishbone interconnect (single master, shared bus) 
-//  The CPU Pipeline_wb is the sole Wishbone master.
-//  SoC_top contains a simple address decoder that selects one slave per cycle.
-//  A combinational mux feeds the correct slave DAT_O / ACK back to the master.
-//
-//  Slaves and their select conditions (using wb_adr bits [31:12]):
-//    dmem  : wb_adr[31:16] == 16'h0002          â†’ data memory
-//    uart  : wb_adr[31:12] == 20'h10000          â†’ UART registers
-//    i2c   : wb_adr[31:12] == 20'h10001          â†’ I2C registers
-//
-//  Physical I/O (Nexys A7)
-//  CLK100MHZ    ” 100 MHz system clock
-//  CPU_RESETN   ” active-low reset button
-//  UART_TXD_IN  ” USB-UART RX  (PC â†’ FPGA)
-//  UART_RXD_OUT ” USB-UART TX  (FPGA â†’ PC)
-//  I2C_SCL     ” I2C clock  (4k7 pull-up to 3.3 V required)
-//  I2C_SDA      ” I2C data   (4k7 pull-up to 3.3 V required)
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 07/11/2026 03:40:03 PM
+// Design Name: 
+// Module Name: SoC_top
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 module SoC_top #(
     parameter integer  CLOCK_FREQ_HZ = 100_000_000,
     parameter integer  UART_BAUD     = 115_200,
@@ -64,11 +50,9 @@ module SoC_top #(
     logic        dmem_ack,   uart_ack,   i2c_ack;
     logic                    uart_irq,   i2c_irq;
 
-    // =========================================================================
+
     // Address decoder
-    //   Each slave owns a fixed region; decode is purely combinational.
-    //   Priority order: dmem â†’ uart â†’ i2c â†’ (default: no slave)
-    // =========================================================================
+    //   Priority order: dmem â†’ uart â†’ i2c â†’ 
     logic dmem_sel, uart_sel, i2c_sel;
 
     // Data SRAM: 0x0002_0000 .. 0x0002_FFFF  (64 KB page, bits [31:16]==0x0002)
@@ -80,10 +64,9 @@ module SoC_top #(
     // I2C: 0x1000_1xxx  (4 KB page)
     assign i2c_sel  = wb_cyc && (wb_adr[31:12] == 20'h10001);
 
-    // =========================================================================
-    // Response mux (slave â†’ master)
-    //   Only one slave is selected at a time, so a priority mux is safe.
-    // =========================================================================
+
+    // Response mux (slave master)
+
     logic [31:0] wb_dat_s2m;
     logic        wb_ack;
 
@@ -109,9 +92,9 @@ module SoC_top #(
     logic irq;
     assign irq = uart_irq | i2c_irq;
 
-    // =========================================================================
+
     // CPU ” RV32I pipelined core (Wishbone master)
-    // =========================================================================
+
     Pipeline_wb #(
         .MTVEC_ADDR (MTVEC_ADDR)
     ) u_cpu (

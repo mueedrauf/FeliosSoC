@@ -1,27 +1,23 @@
 `timescale 1ns / 1ps
-////////////////////////////////////////////////////////////////////////////////
-// Module : ID_mret  (integrate into your existing ID.sv)
-//
-// This file shows ONLY the changes you need to make inside your ID stage.
-// The module name is kept as "ID" so Pipeline_wb compiles unchanged.
-//
-// Change 1 – Add MRetE output port
-// Change 2 – Detect the mret instruction and pass it down the pipeline
-//
-// RISC-V mret encoding:
-//   31:25 = 0011000   funct7-like upper field
-//   24:20 = 00010     rs2 = 2
-//   19:15 = 00000     rs1 = 0
-//   14:12 = 000       funct3
-//   11:7  = 00000     rd  = 0
-//    6:0  = 1110011   SYSTEM opcode (0x73)
-//   Full word: 32'h3020_0073
-//
-// The decode is simple: just compare InstrD to the constant.
-// MRetE is registered into the EX stage alongside the other control signals,
-// then passed back to Pipeline_wb where it triggers the CSR mret action.
-//
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 06/23/2026 04:02:47 PM
+// Design Name: 
+// Module Name: ID
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 
 
 

@@ -29,30 +29,26 @@ module Reg_file(
     output logic [31:0] readData1, readData2
     );
     
-    
     logic [31:0] RegFile [31:0];
-    integer  j;
-    
-
+    integer j;
     
     assign readData1 = RegFile[readReg1];
     assign readData2 = RegFile[readReg2];
     
     always_ff @(posedge clk or posedge rst) begin
-    
-    if (rst) begin
-        for(j = 0; j< 32; j++)begin
-            RegFile [j] = j;
+        if (rst) begin
+            // Initialize standard registers with their index value (j)
+            for(j = 0; j < 32; j++) begin
+                RegFile[j] <= j;
+            end
+            
+            // Hardcoded Base Addresses for Peripherals and Memory
+            RegFile[20] <= 32'h0002_0000; // x20: Data Memory (DMEM) base address
+            RegFile[28] <= 32'h1000_0000; // x28: UART Peripheral base address
         end
-        RegFile[3]  <= 32'h0002_0000;
+        else if ((writeReg != 5'b0) && (RegWrite)) begin
+            RegFile[writeReg] <= writeData;
+        end
     end
-    
-    
-    
-    else if ((writeReg != 5'b0) & (RegWrite)) begin
-        RegFile[writeReg] <= writeData;
-    end
-    end
-    
-    
+
 endmodule

@@ -1,25 +1,23 @@
 `timescale 1ns / 1ps
-////////////////////////////////////////////////////////////////////////////////
-// Module : Pipeline_wb
-// RV32I 5-stage pipeline - Wishbone B4 master, CSR (mepc/mstatus/mtvec), mret.
-//
-// Changes from previous version
-// ?????????????????????????????
-//  1. wb_sel_o [3:0] output added.
-//     Required by dmem_wb_slave for byte-enable gating.  MEM drives it;
-//     this module exposes it on the top-level Wishbone port so SoC_top
-//     can route it to both dmem_wb_slave and peripherals.
-//
-//  2. MEM instantiation updated to connect wb_sel_o.
-//
-//  All other logic is identical to the previous Pipeline_wb.
-//
-// Interrupt handling (summary)
-// ?????????????????????????????
-//  TakeTrap fires when irq_i & mstatus_MIE & ~WBStall & ~StallF.
-//  mepc <- PCD, PC <- MTVEC_ADDR, MIE <- 0, flush IF/ID and ID/EX regs.
-//  mret (32'h3020_0073) restores PC from mepc and re-enables MIE.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 07/11/2026 03:40:03 PM
+// Design Name: 
+// Module Name: Pipeline_wb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 module Pipeline_wb #(
     parameter logic [31:0] MTVEC_ADDR = 32'h0000_0100
 )(

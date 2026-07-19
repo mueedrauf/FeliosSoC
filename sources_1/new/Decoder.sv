@@ -38,7 +38,6 @@ module Decoder(
     parameter Stype = 7'b0100011;
     parameter Btype = 7'b1100011;
     parameter Jtype = 7'b1101111;
-        logic [19:0] imm_j;
     assign opcode = Instr [6:0];
     
     always_comb begin
@@ -88,6 +87,34 @@ module Decoder(
         rd = Instr[11:7];    
         end
 
+        // ?? BUG FIX ????????????????????????????????????????????????????????
+        // I-type ALU (addi, andi, ori, slti, xori, slli, srli, srai)
+        // opcode 0010011 was completely absent from this case statement.
+        // Without this case, every I-type ALU instruction fell through to
+        // the implicit default, leaving imm, rs1, func3, and rd all at 'X'.
+        // The sign-extender produced ImmExt=X, the register file read
+        // rs1=X (random port), and the write address rd=X caused spurious
+        // writes. Result: addi/andi instructions produced X in the pipeline.
+        7'b0010011: begin
+            func7 = 7'bx;
+            imm   = Instr[31:20];   // [31:20] is the 12-bit immediate
+            rs1   = Instr[19:15];
+            rs2   = 5'bx;           // no rs2 for I-type
+            func3 = Instr[14:12];
+            rd    = Instr[11:7];
+            imm_j = 20'bx;
+        end
+        // ???????????????????????????????????????????????????????????????????
+
+        default: begin
+            func7 = 7'b0;
+            imm   = 12'b0;
+            imm_j = 20'b0;
+            rs1   = 5'b0;
+            rs2   = 5'b0;
+            func3 = 3'b0;
+            rd    = 5'b0;
+        end
     
     endcase
     
