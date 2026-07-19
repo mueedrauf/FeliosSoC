@@ -81,7 +81,7 @@ module inst_Mem (
 
         // ?? SECTION D  0x034: Branch beq ????????????????????????????????????
         // beq x0, x0, +8    (0x00000463)  always taken ? skip 0x038
-        instFile['h034]=8'h63; instFile['h035]=8'h08; instFile['h036]=8'h00; instFile['h037]=8'h00;
+        instFile['h034]=8'h63; instFile['h035]=8'h04; instFile['h036]=8'h00; instFile['h037]=8'h00;
         // add x24, x0, x1   (0x00100C33)  SKIPPED if beq taken
         instFile['h038]=8'h33; instFile['h039]=8'h0C; instFile['h03A]=8'h10; instFile['h03B]=8'h00;
         // addi x24, x0, 99  (0x06300C13)  branch target ? x24=99
@@ -89,7 +89,7 @@ module inst_Mem (
 
         // ?? SECTION E  0x040: JAL ???????????????????????????????????????????
         // jal x1, +8        (0x008000EF)  x1=0x0044, jump?0x0048
-        instFile['h040]=8'hEF; instFile['h041]=8'h00; instFile['h042]=8'hC0; instFile['h043]=8'h00;
+        instFile['h040]=8'hEF; instFile['h041]=8'h00; instFile['h042]=8'h80; instFile['h043]=8'h00;
         // addi x25,x0,0xAA  (0x0AA00C93)  SKIPPED
         instFile['h044]=8'h93; instFile['h045]=8'h0C; instFile['h046]=8'hA0; instFile['h047]=8'h0A;
         // addi x25,x0,0xBB  (0x0BB00C93)  jal target ? x25=0xBB

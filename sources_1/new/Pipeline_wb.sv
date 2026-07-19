@@ -147,6 +147,7 @@ module Pipeline_wb #(
     // =========================================================================
     EX Execute (
         .clk        (clk),        .rst        (rst), .WBStall(WBStall),
+        .FlushE     (FlushE_combined),                           // FIX: was missing
         .RegWriteE  (RegWriteE),  .MemWriteE  (MemWriteE),
         .JumpE      (JumpE),      .BranchE    (BranchE),
         .ALUSrcE    (ALUSrcE),    .ResultSrcE (ResultSrcE),
