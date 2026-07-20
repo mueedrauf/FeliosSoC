@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 
-`timescale 1ns / 1ps
 ////////////////////////////////////////////////////////////////////////////////
 // Module : inst_Mem  - UPDATED for testbench (512 bytes)
 //
@@ -63,8 +62,8 @@ module inst_Mem (
         // ?? SECTION B  0x018: I-type ADDI ???????????????????????????????????
         // addi x16, x0, 100  (0x06400813)  x16=100
         instFile['h018]=8'h13; instFile['h019]=8'h08; instFile['h01A]=8'h40; instFile['h01B]=8'h06;
-        // addi x17, x16, -10 (0xFF680893)  x17=90
-        instFile['h01C]=8'h93; instFile['h01D]=8'h08; instFile['h01E]=8'h68; instFile['h01F]=8'hFF;
+        // lui x17, 0x12345   (0x123458B7)  x17 = 0x12345000
+        instFile['h01C]=8'hB7; instFile['h01D]=8'h58; instFile['h01E]=8'h34; instFile['h01F]=8'h12;
 
         // ?? SECTION C  0x020: Store/Load via Wishbone DMEM ??????????????????
         // x20 = 0x0002_0000 sustained-forced by testbench (see BUG FIX note)
@@ -185,74 +184,7 @@ endmodule
 
 //endmodule
 
-//module inst_Mem( 
-//    input logic [31:0] PC,
-//    output logic [31:0] Instr
-//    );
-    
-//    logic [7:0] instFile [31:0];
-    
-    
-//    // loops are not synthesizable in Verilog, this just define the file with 0's.   
-//    integer i;
-//	initial begin
 
-//        // Instruction 2: add x6, x8, x9
-//        instFile[0]  = 8'h33;
-//        instFile[1]  = 8'h03;
-//        instFile[2] = 8'h94;
-//        instFile[3] = 8'h00;
-        
-        
-//        // Instruction 3: sub x7, x6, x20
-//        instFile[4] = 8'hB3;
-//        instFile[5] = 8'h03;
-//        instFile[6] = 8'h43;
-//        instFile[7] = 8'h41;
-        
-//        // Instruction 0: lw x28, 4(x0)
-//        instFile[8] = 8'h03;
-//        instFile[9] = 8'h2E;
-//        instFile[10] = 8'h40;
-//        instFile[11] = 8'h00;
-        
-
-//        // Instruction 1: sw x7, 5(x6)
-//        instFile[12] = 8'hA3;
-//        instFile[13] = 8'h32;
-//        instFile[14] = 8'h73;
-//        instFile[15] = 8'h00;
-
-	    
-//	    // Instruction 8: beq x29 x29 label
-//	    instFile[16] = 8'h63;
-//	    instFile[17] = 8'h82;
-//	    instFile[18] = 8'hDE;
-//	    instFile[19] = 8'h01;
-	    
-//	    // all are add
-//	    instFile[20] = 8'h0;
-//	    instFile[21] = 8'h0;
-//	    instFile[22] = 8'h0;
-//	    instFile[23] = 8'h0;
-	    
-//	    // jump instruction
-//	    instFile[24] = 8'hef;
-//	    instFile[25] = 8'hf0;
-//	    instFile[26] = 8'h9f;
-//	    instFile[27] = 8'hff;
-	    
-	    
-//	    instFile[28] = 8'h33;
-//	    instFile[29] = 8'h00;
-//	    instFile[30] = 8'h94;
-//	    instFile[31] = 8'h00;
-	    
-
-	    
-	    
-//	end
-	
 //	assign Instr = {instFile[PC+3], instFile[PC+2], instFile[PC+1], instFile[PC] };
 
 //endmodule

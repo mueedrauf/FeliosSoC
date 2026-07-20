@@ -20,105 +20,94 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Module Name: Decoder
+// Description: RV32I instruction field decoder.
+//
+// LUI fix: imm_j is shared between JAL and LUI, but JAL uses a scrambled
+// bit reassembly {Instr[31],Instr[19:12],Instr[20],Instr[30:21]}.
+// LUI must store Instr[31:12] STRAIGHT (no scramble) so that the
+// sign_extender's {imm_j, 12'b0} produces the correct result.
+//////////////////////////////////////////////////////////////////////////////////
+
 module Decoder(
-    input logic [31:0] Instr,
-    output logic [4:0] rs1, rs2, rd,
-    output logic [6:0] opcode,
-    output logic [2:0] func3, 
-    output logic [6:0] func7,
+    input  logic [31:0] Instr,
+    output logic [4:0]  rs1, rs2, rd,
+    output logic [6:0]  opcode,
+    output logic [2:0]  func3,
+    output logic [6:0]  func7,
     output logic [11:0] imm,
-    output logic [19:0] imm_j
-    
-    );
-    
-    // parameterize the opcode for better understandability
-    
-    parameter Rtype = 7'b0110011;
-    parameter Itype = 7'b0000011;
-    parameter Stype = 7'b0100011;
-    parameter Btype = 7'b1100011;
-    parameter Jtype = 7'b1101111;
-    assign opcode = Instr [6:0];
-    
+    output logic [19:0] imm_j   // JAL: scrambled bits | LUI: straight Instr[31:12]
+);
+
+    localparam Rtype = 7'b0110011;
+    localparam Iload = 7'b0000011;
+    localparam IaluT = 7'b0010011;
+    localparam Stype = 7'b0100011;
+    localparam Btype = 7'b1100011;
+    localparam Jtype = 7'b1101111;
+    localparam LUI   = 7'b0110111;
+
+    assign opcode = Instr[6:0];
+
     always_comb begin
-    case (opcode) 
-        Rtype: begin
-            func7 = Instr[31:25];
-            rs2 = Instr[24:20];
-            rs1 = Instr[19:15];
-            func3 = Instr[14:12];
-            rd = Instr[11:7];
-            imm = 12'bx;
-        end
-             
-        Itype: begin
-            func7 = 7'bx;
-            imm = Instr[31:20]; 
-            rs1 = Instr[19:15];
-            rs2 = 5'bx;
-            func3 = Instr[14:12];
-            rd = Instr[11:7];
-        end  
+        // safe defaults
+        func7 = 7'b0;
+        rs2   = 5'b0;
+        rs1   = 5'b0;
+        func3 = 3'b0;
+        rd    = 5'b0;
+        imm   = 12'b0;
+        imm_j = 20'b0;
 
-        Stype: begin
-            func7 = 7'bx;
-            imm = {Instr[31:25], Instr[11:7]};
-            rs2 = Instr[24:20];
-            rs1 = Instr[19:15];
-            func3 = Instr[14:12];
-            rd = 5'bx;
-        end  
-
-        Btype: begin
-            func7 = 7'bx;
-            imm = {Instr[31], Instr[7], Instr[30:25], Instr[11:8]};
-            rs2 = Instr[24:20];
-            rs1 = Instr[19:15];
-            func3 = Instr[14:12];
-            rd = 5'bx;
-        end
-        
-        Jtype: begin
-        func7 = 7'bx;
-        imm_j = {Instr[31], Instr[19:12], Instr[20],Instr[30:21]}; 
-        rs2 = 5'bx;
-        rs1 = 5'bx;
-        func3 = 3'bx;
-        rd = Instr[11:7];    
-        end
-
-        // ?? BUG FIX ????????????????????????????????????????????????????????
-        // I-type ALU (addi, andi, ori, slti, xori, slli, srli, srai)
-        // opcode 0010011 was completely absent from this case statement.
-        // Without this case, every I-type ALU instruction fell through to
-        // the implicit default, leaving imm, rs1, func3, and rd all at 'X'.
-        // The sign-extender produced ImmExt=X, the register file read
-        // rs1=X (random port), and the write address rd=X caused spurious
-        // writes. Result: addi/andi instructions produced X in the pipeline.
-        7'b0010011: begin
-            func7 = 7'bx;
-            imm   = Instr[31:20];   // [31:20] is the 12-bit immediate
-            rs1   = Instr[19:15];
-            rs2   = 5'bx;           // no rs2 for I-type
-            func3 = Instr[14:12];
-            rd    = Instr[11:7];
-            imm_j = 20'bx;
-        end
-        // ???????????????????????????????????????????????????????????????????
-
-        default: begin
-            func7 = 7'b0;
-            imm   = 12'b0;
-            imm_j = 20'b0;
-            rs1   = 5'b0;
-            rs2   = 5'b0;
-            func3 = 3'b0;
-            rd    = 5'b0;
-        end
-    
-    endcase
-    
-    
+        case (opcode)
+            Rtype: begin
+                func7 = Instr[31:25];
+                rs2   = Instr[24:20];
+                rs1   = Instr[19:15];
+                func3 = Instr[14:12];
+                rd    = Instr[11:7];
+            end
+            Iload: begin
+                imm   = Instr[31:20];
+                rs1   = Instr[19:15];
+                func3 = Instr[14:12];
+                rd    = Instr[11:7];
+            end
+            IaluT: begin
+                imm   = Instr[31:20];
+                rs1   = Instr[19:15];
+                func3 = Instr[14:12];
+                rd    = Instr[11:7];
+            end
+            Stype: begin
+                imm   = {Instr[31:25], Instr[11:7]};
+                rs2   = Instr[24:20];
+                rs1   = Instr[19:15];
+                func3 = Instr[14:12];
+            end
+            Btype: begin
+                imm   = {Instr[31], Instr[7], Instr[30:25], Instr[11:8]};
+                rs2   = Instr[24:20];
+                rs1   = Instr[19:15];
+                func3 = Instr[14:12];
+            end
+            Jtype: begin
+                // JAL: non-contiguous J-type immediate, reassembled as
+                // [20|10:1|11|19:12] -> stored in imm_j[19:0]
+                imm_j = {Instr[31], Instr[19:12], Instr[20], Instr[30:21]};
+                rd    = Instr[11:7];
+            end
+            LUI: begin
+                // U-type: bits [31:12] are the immediate, stored STRAIGHT.
+                // sign_extender (ImmSrc=3'b100) does {imm_j, 12'b0} which
+                // gives the correct rd = imm[31:12] << 12.
+                // DO NOT apply the JAL scramble here.
+                imm_j = Instr[31:12];
+                rd    = Instr[11:7];
+            end
+        endcase
     end
-    
+
 endmodule

@@ -20,25 +20,38 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+
+
 module Control_Unit(
-    input  [6:0] Op,
-    output reg       RegWrite,
-    output reg [1:0] ImmSrc,
-    output reg       ALUSrc,
-    output reg       MemWrite,
-    output reg [1:0] ResultSrc,
-    output reg       Branch,
-    output reg       jump,
-    output reg [1:0] ALUOp
+    input  logic [6:0] Op,
+    output logic        RegWrite,
+    output logic [2:0]  ImmSrc,    // widened to 3 bits
+    output logic        ALUSrc,
+    output logic        MemWrite,
+    output logic [1:0]  ResultSrc,
+    output logic        Branch,
+    output logic        jump,
+    output logic [1:0]  ALUOp,
+    output logic        Lui        // NEW: forces SrcA=0 in EX for LUI
 );
 
 always @(*) begin
-    case(Op)
+    // safe defaults
+    RegWrite  = 1'b0;
+    ImmSrc    = 3'b000;
+    ALUSrc    = 1'b0;
+    MemWrite  = 1'b0;
+    ResultSrc = 2'b00;
+    Branch    = 1'b0;
+    jump      = 1'b0;
+    ALUOp     = 2'b00;
+    Lui       = 1'b0;
 
-        // lw instruction
+    case (Op)
+        // lw
         7'b0000011: begin
             RegWrite  = 1'b1;
-            ImmSrc    = 2'b00;
+            ImmSrc    = 3'b000;
             ALUSrc    = 1'b1;
             MemWrite  = 1'b0;
             ResultSrc = 2'b01;
@@ -46,23 +59,21 @@ always @(*) begin
             ALUOp     = 2'b00;
             jump      = 1'b0;
         end
-
-        // sw instruction
+        // sw
         7'b0100011: begin
             RegWrite  = 1'b0;
-            ImmSrc    = 2'b01;
+            ImmSrc    = 3'b001;
             ALUSrc    = 1'b1;
             MemWrite  = 1'b1;
-            ResultSrc = 2'bxx;
+            ResultSrc = 2'b00;
             Branch    = 1'b0;
             ALUOp     = 2'b00;
             jump      = 1'b0;
         end
-
-        // R-type instruction
+        // R-type
         7'b0110011: begin
             RegWrite  = 1'b1;
-            ImmSrc    = 2'bxx;
+            ImmSrc    = 3'b000;
             ALUSrc    = 1'b0;
             MemWrite  = 1'b0;
             ResultSrc = 2'b00;
@@ -70,55 +81,51 @@ always @(*) begin
             ALUOp     = 2'b10;
             jump      = 1'b0;
         end
-
-        // beq instruction
+        // beq
         7'b1100011: begin
             RegWrite  = 1'b0;
-            ImmSrc    = 2'b10;
+            ImmSrc    = 3'b010;
             ALUSrc    = 1'b0;
             MemWrite  = 1'b0;
-            ResultSrc = 2'bxx;
+            ResultSrc = 2'b00;
             Branch    = 1'b1;
             ALUOp     = 2'b01;
             jump      = 1'b0;
         end
-        
-        // jal instruction
+        // jal
         7'b1101111: begin
             RegWrite  = 1'b1;
-            ImmSrc    = 2'b11;
-            ALUSrc    = 1'bx;
+            ImmSrc    = 3'b011;
+            ALUSrc    = 1'b0;
             MemWrite  = 1'b0;
             ResultSrc = 2'b10;
             Branch    = 1'b0;
-            ALUOp     = 2'b00; // MODIFIED: Changed from 2'bxx to 2'b00 for stable decoding
+            ALUOp     = 2'b00;
             jump      = 1'b1;
         end
-        
-        // i type
+        // I-ALU (addi, andi, ori, xori, slti, slli, srli, srai)
         7'b0010011: begin
             RegWrite  = 1'b1;
-            ImmSrc    = 2'b00;
-            ALUSrc    = 1'b1;   
+            ImmSrc    = 3'b000;
+            ALUSrc    = 1'b1;
             MemWrite  = 1'b0;
             ResultSrc = 2'b00;
             Branch    = 1'b0;
             ALUOp     = 2'b10;
             jump      = 1'b0;
         end
-        
-        // default case
-        default: begin
-            RegWrite  = 1'b0;
-            ImmSrc    = 2'b00;
-            ALUSrc    = 1'b0;
+        // LUI - NEW
+        7'b0110111: begin
+            RegWrite  = 1'b1;
+            ImmSrc    = 3'b100;   // U-type: {imm[31:12], 12'b0}
+            ALUSrc    = 1'b1;     // SrcB = ImmExt
             MemWrite  = 1'b0;
-            ResultSrc = 2'b0;
+            ResultSrc = 2'b00;    // write ALU result to rd
             Branch    = 1'b0;
-            ALUOp     = 2'b00;
+            ALUOp     = 2'b00;    // ADD (0 + ImmExt)
             jump      = 1'b0;
+            Lui       = 1'b1;     // tells EX to zero SrcA
         end
-
     endcase
 end
 

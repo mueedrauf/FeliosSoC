@@ -55,6 +55,7 @@ module Pipeline_wb #(
     logic [4:0]  RdE;
     logic [4:0]  Rs1E, Rs2E, Rs1D, Rs2D;
     logic        FlushE;
+    logic        LuiE;          // NEW: LUI pass-through
 
     // EX stage wires
     logic [31:0] ALUResultM, WriteDataM, PCPlus4M;
@@ -132,7 +133,8 @@ module Pipeline_wb #(
         .ResultW    (ResultW),
         .RegWriteE  (RegWriteE),  .MemWriteE  (MemWriteE),
         .JumpE      (JumpE),      .BranchE    (BranchE),
-        .ALUSrcE    (ALUSrcE),    .ResultSrcE (ResultSrcE),
+        .ALUSrcE    (ALUSrcE),    .LuiE       (LuiE),
+        .ResultSrcE (ResultSrcE),
         .ALUControlE(ALUControlE),
         .RD1E       (RD1E),       .RD2E       (RD2E),
         .PCE        (PCE),        .RdE        (RdE),
@@ -150,7 +152,8 @@ module Pipeline_wb #(
         .FlushE     (FlushE_combined),                           // FIX: was missing
         .RegWriteE  (RegWriteE),  .MemWriteE  (MemWriteE),
         .JumpE      (JumpE),      .BranchE    (BranchE),
-        .ALUSrcE    (ALUSrcE),    .ResultSrcE (ResultSrcE),
+        .ALUSrcE    (ALUSrcE),    .LuiE       (LuiE),
+        .ResultSrcE (ResultSrcE),
         .ALUControlE(ALUControlE),
         .RD1E       (RD1E),       .RD2E       (RD2E),
         .PCE        (PCE),        .RdE        (RdE),
